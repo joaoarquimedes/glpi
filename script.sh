@@ -103,9 +103,9 @@ function schedule(){
   # Dica de rotinas:
   # cron -> A cada 1 minuto
   # unlock -> A cada 30 minutos
-  # clear -> Uma vez ao dia (indicamos as 22:59)
-  # timestamps -> Uma vez ao dia (indicamos as 23:59)
-  # ldap -> A cada 1 hora. Base muito grande, a cada 2 horas
+  # clear -> Uma vez ao dia (22:59)
+  # timestamps -> Uma vez ao dia (23:59)
+  # ldapsync -> A cada 1 hora. Base muito grande, a cada 2 horas
   case "$1" in
     cron)
       echo "Executando CRON"

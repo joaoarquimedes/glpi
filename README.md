@@ -27,7 +27,13 @@ Realizar o build da imagem e inicar os containers. Neste caso pode usar o `scrip
 ./script.sh logs
 ```
 
-Analisar e adicionar as rotinas conforme o necessário:
+Analisar e adicionar as rotinas conforme o necessário:<br>
+Dica de rotinas:
+- cron: A cada 1 minuto
+- unlock: A cada 30 minutos
+- clear: Uma vez ao dia (22:59)
+- timestamps: Uma vez ao dia (23:59)
+- ldapsync: A cada 1 hora. Base muito grande, a cada 2 horas
 ```
 ./script.sh schedule cron
 ./script.sh schedule unlock
