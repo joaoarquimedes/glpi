@@ -1,0 +1,13 @@
+/var/log/nginx/*.log {
+    daily
+    missingok
+    rotate 30
+    compress
+    delaycompress
+    notifempty
+    sharedscripts
+    postrotate
+        /bin/touch /var/log/nginx/access.log
+        /bin/touch /var/log/nginx/error.log
+    endscript
+}

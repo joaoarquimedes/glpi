@@ -1,0 +1,11 @@
+services:
+  logrotate:
+    build:
+      context: ./Dockerfile
+      dockerfile: logrotate.dockerfile
+    image: ${STACK}/logrotate
+    platform: ${ARCH}
+    volumes:
+      - ./volumes/log/nginx/:/var/log/nginx/:rw
+      - /etc/localtime:/etc/localtime:ro
+    command: ash -c "exit 0"

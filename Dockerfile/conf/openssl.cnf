@@ -1,0 +1,61 @@
+[ req ]
+prompt = no
+distinguished_name = req_distinguished_name
+req_extensions = v3_req
+
+[ req_distinguished_name ]
+countryName = CERT_COUNTRYNAME
+stateOrProvinceName = CERT_STATEORPROVINCE
+localityName = CERT_LOCALITY
+organizationName = CERT_ORGANIZATIONNAME
+commonName = CERT_COMMONNAME
+emailAddress = CERT_MAILADDRESS
+
+[ v3_req ]
+basicConstraints = CA:FALSE
+keyUsage = digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth
+subjectAltName = @alt_names
+authorityInfoAccess = OCSP;URI:http://CERT_DOMAINNAME/
+crlDistributionPoints = URI:http://CERT_DOMAINNAME/crl/crl.pem
+
+[ alt_names ]
+DNS.1 = CERT_DOMAINNAME
+
+[ ca ]
+default_ca = CA_default
+
+[ CA_default ]
+dir               = /etc/nginx/ssl
+certs             = $dir/certs
+crl_dir           = $dir/crl
+database          = $dir/index.txt
+new_certs_dir     = $dir/newcerts
+certificate       = $dir/ca.crt
+serial            = $dir/serial
+crlnumber         = $dir/crlnumber
+crl               = $dir/crl.pem
+private_key       = $dir/ca.key
+RANDFILE          = $dir/.rand
+
+default_days      = 365
+default_crl_days  = 30
+default_md        = sha256
+
+policy            = policy_loose
+x509_extensions   = usr_cert
+
+[ policy_loose ]
+countryName             = optional
+stateOrProvinceName     = optional
+localityName            = optional
+organizationName        = optional
+organizationalUnitName  = optional
+commonName              = supplied
+emailAddress            = optional
+
+[ usr_cert ]
+basicConstraints = CA:FALSE
+nsComment = "OpenSSL Generated Certificate"
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid,issuer

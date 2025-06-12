@@ -1,0 +1,129 @@
+secrets:
+  MYSQL_DATABASE:
+    file: ./conf/mysql/secrets/MYSQL_DATABASE
+  MYSQL_USER:
+    file: ./conf/mysql/secrets/MYSQL_USER
+  MYSQL_PASSWORD:
+    file: ./conf/mysql/secrets/MYSQL_PASSWORD
+  MYSQL_ROOT_PASSWORD:
+    file: ./conf/mysql/secrets/MYSQL_ROOT_PASSWORD
+
+volumes:
+  sessions:
+  cache:
+  database:
+
+networks:
+  glpi:
+    name: ${NETWORK}
+    attachable: true
+
+services:
+  server:
+    build:
+      context: ./Dockerfile
+      dockerfile: Dockerfile
+      args:
+        ARCH: ${ARCH}
+        GLPI_VERSION: ${GLPI_VERSION}
+        NGINX_VERSION: ${NGINX_VERSION}
+        PHP_VERSION: ${PHP_VERSION}
+        GLPI_DIR: ${GLPI_DIR}
+        # Plugin
+        GLPI_PLUGIN_OSINVENTORYNG: ${GLPI_PLUGIN_OSINVENTORYNG}
+        GLPI_PLUGIN_FORMCREATOR: ${GLPI_PLUGIN_FORMCREATOR}
+        GLPI_PLUGIN_GENERICOBJECT: ${GLPI_PLUGIN_GENERICOBJECT}
+        GLPI_PLUGIN_FIELDS: ${GLPI_PLUGIN_FIELDS}
+        GLPI_PLUGIN_BEHAVIORS: ${GLPI_PLUGIN_BEHAVIORS}
+        GLPI_PLUGIN_NEWS: ${GLPI_PLUGIN_NEWS}
+        GLPI_PLUGIN_TAG: ${GLPI_PLUGIN_TAG}
+        GLPI_PLUGIN_OAUTHIMAP: ${GLPI_PLUGIN_OAUTHIMAP}
+        GLPI_PLUGIN_GLPIINVENTORY: ${GLPI_PLUGIN_GLPIINVENTORY}
+        GLPI_PLUGIN_DATAINJECTION: ${GLPI_PLUGIN_DATAINJECTION}
+        # Certificate
+        CERT_DOMAINNAME: ${CERT_DOMAINNAME}
+        CERT_COUNTRYNAME: ${CERT_COUNTRYNAME}
+        CERT_STATEORPROVINCE: ${CERT_STATEORPROVINCE}
+        CERT_LOCALITY: ${CERT_LOCALITY}
+        CERT_ORGANIZATIONNAME: ${CERT_ORGANIZATIONNAME}
+        CERT_COMMONNAME: ${CERT_COMMONNAME}
+        CERT_MAILADDRESS: ${CERT_MAILADDRESS}
+    image: local/${STACK}:${GLPI_VERSION}
+    restart: always
+    deploy:
+      # Para Docker Swarm
+      # mode: replicated
+      # replicas: 1
+      # restart_policy:
+      #   condition: any
+      #   delay: 5s
+      #   max_attempts: 3
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+    volumes:
+      - sessions:/var/www/html/files/_sessions:rw
+      - ./volumes/glpi/config:/var/www/html/config:rw
+      - ./volumes/glpi/files:/var/www/html/files:rw
+      - ./volumes/glpi/marketplace:/var/www/html/marketplace:rw
+      - ./conf/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./volumes/log/nginx:/var/log/nginx:rw
+      - cache:/home/www-data/:rw
+      - /etc/localtime:/etc/localtime:ro
+      # Database
+      - ./conf/glpi/config_db.php:/var/www/html/config/config_db.php
+      # Picture
+      - ./conf/pics/fd_logo.png:/var/www/html/pics/logos/logo-GLPI-100-white.png
+      - ./conf/pics/login_logo_glpi.png:/var/www/html/pics/logos/logo-GLPI-250-black.png
+    env_file:
+      - .env
+    networks:
+      glpi:
+    ports:
+      - target: 80
+        published: 80
+        protocol: tcp
+        mode: host
+      - target: 443
+        published: 443
+        protocol: tcp
+        mode: host
+
+  database:
+    image: ${DATABASE_VERSION}
+    deploy:
+      # Para Docker Swarm
+      # mode: replicated
+      # replicas: 1
+      # restart_policy:
+      #   condition: any
+      #   delay: 15s
+      #   max_attempts: 3
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+    cap_add:
+      - SYS_NICE
+    volumes:
+      - database:/var/lib/mysql/:rw
+      - ./conf/mysql/my.cnf:/etc/my.cnf:ro
+      - /etc/localtime:/etc/localtime:ro
+    secrets:
+      - MYSQL_DATABASE
+      - MYSQL_USER
+      - MYSQL_PASSWORD
+      - MYSQL_ROOT_PASSWORD
+    environment:
+      - MYSQL_DATABASE_FILE=/run/secrets/MYSQL_DATABASE
+      - MYSQL_USER_FILE=/run/secrets/MYSQL_USER
+      - MYSQL_PASSWORD_FILE=/run/secrets/MYSQL_PASSWORD
+      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/MYSQL_ROOT_PASSWORD
+    networks:
+      glpi:
+    command:
+      - mysqld
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_bin
+      - --default-authentication-plugin=caching_sha2_password
